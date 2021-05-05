@@ -1,0 +1,11 @@
+{
+  "goods_name": "商品名称",
+  "order_sn": "订单号",
+  "order_status_str": "订单状态",
+  "goods_number": "商品数量",
+  "order_time": "支付时间",
+  "shipping_time": "发货时间",
+  "goods_id": "商品ID",
+  "spec": "商品规格",
+  "order_amount": "商家实收金额"
+}

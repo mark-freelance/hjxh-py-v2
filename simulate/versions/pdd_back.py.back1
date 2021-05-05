@@ -1,0 +1,239 @@
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.common.exceptions import NoSuchElementException
+from db.client import db
+from simulate.config.const import URL_PDD_BACKEND_LOGIN, URL_PDD_BACKEND_LOGOUT, TARGET_TO_USE, TARGET_LOGIN_VIA_ACCOUNT, PATH_COOKIES
+from simulate.utils.log import logger
+from simulate.utils.driver_supports import find_ele_with_text, wait, scroll_to_bottom, scroll_to_top
+from simulate.utils.io import json_dump
+from simulate.utils.driver import driver, accounts
+
+import re, time
+
+DELAY_PROMOTE = 1
+TARGET_KEYS_BASE = ['曝光量', '成交笔数', '交易额', '花费']
+TARGET_KEYS_EXTEND = TARGET_KEYS_BASE + ["点击量"]
+
+
+def visit_login(driver: WebDriver):
+    driver.get(URL_PDD_BACKEND_LOGIN)
+
+
+def logout(driver: WebDriver):
+    driver.get(URL_PDD_BACKEND_LOGOUT)
+
+
+def kill_window(driver: WebDriver):
+    """
+    去除弹窗
+    :param driver:
+    :return:
+    """
+    if TARGET_TO_USE not in driver.page_source:
+        logger.info(f"未检测到（{TARGET_TO_USE}）选项")
+    else:
+        logger.info(f"被PDD检测到正在使用Driver，正在确认（{TARGET_TO_USE}）选项")
+
+        ele_confirm_webdriver = find_ele_with_text(driver, TARGET_TO_USE)
+        if not ele_confirm_webdriver:
+            logger.warning(f"未能成功定位到{TARGET_TO_USE}")
+        else:
+            logger.info(f"已成功定位到{TARGET_TO_USE}，正在点击……")
+            ele_confirm_webdriver.click()
+            logger.info(f"已点击{TARGET_TO_USE}")
+            assert TARGET_TO_USE not in driver.page_source, f"{TARGET_TO_USE}还是存在，可能有误"
+
+
+def start_login(driver: WebDriver):
+    """
+    用账户登录
+    :param driver:
+    :return:
+    """
+    ele_login_via_account = find_ele_with_text(driver, TARGET_LOGIN_VIA_ACCOUNT)
+    assert ele_login_via_account is not None, f"未能检测到{TARGET_LOGIN_VIA_ACCOUNT}按钮"
+    ele_login_via_account.click()
+
+    username = accounts["pdd_backend"]["username"]
+    password = accounts["pdd_backend"]["password"]
+    driver.find_element_by_id("usernameId").send_keys(username)
+    driver.find_element_by_id("passwordId").send_keys(password)
+
+    TARGET_TO_LOGIN = "登录"
+    ele_login_btn = find_ele_with_text(driver, TARGET_TO_LOGIN)
+    assert ele_login_btn is not None, f"未检测到{TARGET_TO_LOGIN}按钮"
+    logger.info(f"正在点击{TARGET_TO_LOGIN}按钮")
+    ele_login_btn.click()
+
+    #  进入后台
+    wait(lambda x: "home" in driver.current_url, driver, 5)
+    logger.info("已成功跳转到首页")
+
+
+def save_cookies(driver: WebDriver):
+    json_dump(dict((i["name"], i["value"]) for i in driver.get_cookies()), PATH_COOKIES)
+    logger.info("已成功保存Cookies信息")
+
+
+def parse_promote(driver, target_head, target_rows, with_check=True, change_settings=True, first_in=True):
+    """
+    这个函数用于解析推广页的表格数据
+    最重要的是定位表格元素、判断列数（是否包含目标字段）
+    以及三种场景的数据还是有差异（放心推，没有checkbox）
+    :param driver:
+    :param target_head:
+    :param target_rows:
+    :param with_check:
+    :return:
+    """
+    logger.info("正在解析当前promote页")
+    # 切换每页个数
+    scroll_to_bottom(driver)
+    if first_in:
+        driver.find_element_by_xpath('//*[@data-testid="beast-core-select-header"]').click()
+        driver.find_element_by_xpath('//li/span[text()="50"]').click()
+        time.sleep(DELAY_PROMOTE * 2)
+
+    # 设置标题列
+    # 有三个齿轮，第一个是设置标题列，第二个无法点击（没找到），第三个是数据列
+    if change_settings:
+        logger.info("正在更改标题列信息")
+        driver.find_elements_by_xpath('//*[@data-testid="beast-core-icon-gear"]')[2].click()
+        ele_check_cols = driver.find_element_by_class_name('ant-drawer-body').find_elements_by_xpath('.//*[@data-testid="beast-core-icon-check"]')
+        assert ele_check_cols.__len__() > 0, "未检测到可以点击的列标题项"
+        for ele_check_col in ele_check_cols:
+            if "active" not in ele_check_col.get_attribute("class"):
+                ele_check_col.click()
+        find_ele_with_text(driver, "确认").click()
+        logger.info("已经选定所有标题列")
+    time.sleep(DELAY_PROMOTE)
+
+    # 解析标题列
+    keys = re.split("[\s\n]", driver.find_element_by_xpath(target_head).text)
+    row1 = driver.find_element_by_xpath(target_rows).find_elements_by_tag_name("td")
+    assert len(row1) == len(keys) + with_check, f"校验列数失败，keys: {len(keys)}, vals: {len(row1)}"
+    for key in TARGET_KEYS_EXTEND if with_check else TARGET_KEYS_BASE:
+        assert key in keys, f"丢失字段：{key}，目标字段必须是：{TARGET_KEYS_BASE}"
+    logger.info(f"已获取到列标题信息：{keys}")
+
+    # 解析行数据
+    row_cnt = 0
+    for row in driver.find_elements_by_xpath(target_rows):
+        tds = [td.text for td in row.find_elements_by_tag_name("td")]
+        try:
+            item = dict(i.split("：") for i in tds[1].splitlines()[1:])
+        except ValueError as e:
+            logger.error(f"解析基本信息错误: {tds[1]}")
+            raise e
+        item["update_time"] = int(time.time())
+        for (k, v) in zip(keys[1:], tds[(1+with_check):]):
+            item[k] = v
+        row_cnt += 1
+        # yield item // todo: 是否可以写成yield形式呢
+        db["promotes"].insert_one(item)
+        logger.info(f"插入数据库：{item}")
+    logger.info(f"本页提取数据维度: {row_cnt} x {len(keys)}")
+
+    # 下一页
+    try:
+        scroll_to_bottom(driver)
+        ele_next = driver.find_element_by_xpath('//li[@data-testid="beast-core-pagination-next"]')
+        if 'disabled' not in ele_next.get_attribute("class"):
+            ele_next.click()
+            time.sleep(DELAY_PROMOTE)
+            parse_promote(driver, target_head, target_rows, with_check, change_settings=False, first_in=False)
+        else:
+            logger.info("已爬取完本页")
+    except NoSuchElementException:
+        logger.info("已爬取完本页")
+
+
+def fetch_promote(driver: WebDriver):
+    logger.info("fetching promote")
+    # 直接切到推广页，避免在菜单里寻找
+    driver.get("https://yingxiao.pinduoduo.com/marketing/main/center/search/list")
+
+    time.sleep(DELAY_PROMOTE * 2)
+    TARGET_WINDOW_EXIT_INTRO = '退出介绍'
+    if TARGET_WINDOW_EXIT_INTRO in driver.page_source:
+        find_ele_with_text(driver, TARGET_WINDOW_EXIT_INTRO).click()
+        assert TARGET_WINDOW_EXIT_INTRO not in driver.page_source, f"未能成功关闭弹窗{TARGET_WINDOW_EXIT_INTRO}"
+
+    # 多多搜索
+    logger.info("正在切换到多多搜索")
+    driver.get('https://yingxiao.pinduoduo.com/marketing/main/center/search/list')
+    logger.info("正在切换到昨天")
+    time.sleep(DELAY_PROMOTE)
+    find_ele_with_text(driver, '昨天').click()
+    logger.info("正在切换到推广单元")
+    find_ele_with_text(driver, "推广单元").click()
+    time.sleep(DELAY_PROMOTE)
+    TARGET_PROMOTE_1_HEAD = '//*[@id="__next"]/div/div[2]/div/div/div/div/div[6]/div[5]/div[2]/div/div/div/div[1]/table/thead/tr'
+    TARGET_PROMOTE_1_ROWS = '//*[@id="__next"]/div/div[2]/div/div/div/div/div[6]/div[5]/div[2]/div/div/div/div[1]/table/tbody/tr'
+    parse_promote(driver, TARGET_PROMOTE_1_HEAD, TARGET_PROMOTE_1_ROWS, with_check=True)
+
+    # 多多场景
+    logger.info("正在切换到多多场景")
+    driver.get('https://yingxiao.pinduoduo.com/marketing/main/center/scene/list')
+    time.sleep(DELAY_PROMOTE * 2)
+    logger.info("正在切换到昨天")
+    find_ele_with_text(driver, "昨天").click()
+    logger.info("正在切换到推广单元")
+    find_ele_with_text(driver, "推广单元").click()
+    time.sleep(DELAY_PROMOTE)
+    TARGET_PROMOTE_2_HEAD = '//*[@id="__next"]/div/div[2]/div/div/div/div/div[4]/div[5]/div[2]/div/div/div/div[1]/table/thead/tr'
+    TARGET_PROMOTE_2_ROWS = '//*[@id="__next"]/div/div[2]/div/div/div/div/div[4]/div[5]/div[2]/div/div/div/div[1]/table/tbody/tr'
+    parse_promote(driver, TARGET_PROMOTE_2_HEAD, TARGET_PROMOTE_2_ROWS, with_check=True)
+
+    # 放心推
+    logger.info("正在切换到放心推")
+    driver.get('https://yingxiao.pinduoduo.com/marketing/main/center/cpa/list')
+    logger.info("正在切换到昨天")
+    time.sleep(DELAY_PROMOTE)
+    find_ele_with_text(driver, "昨天").click()
+    TARGET_PROMOTE_3_HEAR = '//*[@id="__next"]/div/div[2]/div/div/div/div/div[7]/div/div/div/div[1]/table/thead/tr'
+    TARGET_PROMOTE_3_ROWS = '//*[@id="__next"]/div/div[2]/div/div/div/div/div[7]/div/div/div/div[1]/table/tbody/tr'
+    parse_promote(driver, TARGET_PROMOTE_3_HEAR, TARGET_PROMOTE_3_ROWS, with_check=False, change_settings=False )
+
+
+def parse_table(driver: WebDriver):
+    items = []
+    keys = [e.text for e in driver.find_elements_by_xpath('//*[@data-testid="beast-core-table-middle-thead"]//th')]
+    for row in driver.find_elements_by_xpath('//*[@data-testid="beast-core-table-middle-tbody"]//tr'):
+        values = [td.text for td in row.find_elements_by_tag_name("td")]
+        assert len(keys) == len(values)
+        item = dict((i, j) for i, j in zip(keys, values))
+        logger.info(f"insert detail item: {item}")
+        items.append(item)
+    return items
+
+
+def fetch_detail(driver: WebDriver):
+    logger.info("正在访问商品详情页面")
+    driver.get("https://mms.pinduoduo.com/sycm/goods_effect/detail")
+    logger.info("勾选所有项")
+    for ele_check in driver.find_elements_by_xpath('//*[@data-testid="beast-core-icon-check"]'):
+        if 'active' not in ele_check.get_attribute('class'):
+            ele_check.click()
+    logger.info("解析页面")
+    parse_table(driver)
+
+
+if __name__ == '__main__':
+
+    visit_login(driver)
+    kill_window(driver)
+    start_login(driver)
+    save_cookies(driver)
+    # fetch_promote(driver)
+    # fetch_detail(driver)
+
+    driver.get("https://yingxiao.pinduoduo.com/marketing/main/center/search/list")
+
+
+
+
+    # logout(driver)
+    # driver.quit()
+
+
+
