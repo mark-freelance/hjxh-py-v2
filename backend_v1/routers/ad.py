@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter
 
-from db.ad import db_fetch_ads_of_id
+from database.ad import db_fetch_ads_of_id
 
 api_ad = APIRouter(prefix='/ad', tags=['推广数据'])
 

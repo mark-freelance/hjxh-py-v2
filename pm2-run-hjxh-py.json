@@ -1,0 +1,8 @@
+{
+  "script": "/home/mark/projects/hjxh-py/venv_hjxh_py/bin/python backend_v2/main.py",
+  "watch": true,
+  "name": "皇家小虎API",
+  "interpreter_args": "-u",
+  "output": "./logs/stdout",
+  "error": "./logs/stderr"
+}

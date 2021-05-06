@@ -3,7 +3,7 @@ from datetime import datetime
 
 import requests
 
-from db.bills import db_add_bills
+from database.bills import db_add_bills
 from log import logger
 from simulate.config.const import URL_DDBK_CHECK_BILLS, PAGE_SIZE, DEFAULT_HEADER, SECONDS_PER_DAY, \
     PATH_DDBK_COOKIES

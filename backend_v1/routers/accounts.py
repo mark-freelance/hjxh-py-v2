@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Form
 
-from db.accounts import db_fetch_accounts, db_add_account
+from database.accounts import db_fetch_accounts, db_add_account
 from ..models.accounts import AccountCategory, Account
 from ..models.base import MongoOutModel
 

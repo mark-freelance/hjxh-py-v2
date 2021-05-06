@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Any
 
 
-class Bill(BaseModel):
+class Order(BaseModel):
     """
     todo: 需要对这些Any状态做细化
     """

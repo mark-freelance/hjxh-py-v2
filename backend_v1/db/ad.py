@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from db.client import db
+from database.client import db
 from settings import KEY_AD_ID, AD_MAP, EPS
 
 coll_ad = db['ad']

@@ -10,7 +10,7 @@ reference: https://www.cnblogs.com/deliaries/p/14121204.html
 '''
 driver.get(URL_DDBK_HOME)
 
-cookie_list = json_load(os.path.join(PATH_DATA, "ddbk-cookie-list.json"))
+cookie_list = json_load(os.path.join(PATH_DATA, "ddbk-COOKIE-list.json"))
 for cookie in cookie_list:
     driver.add_cookie({"name": cookie["name"], "value": cookie["value"]})
 

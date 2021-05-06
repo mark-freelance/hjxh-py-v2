@@ -1,5 +1,5 @@
 import os
-from db.client import db
+from database.client import db
 
 SECONDS_PER_DAY = 86400 # 24 * 60 * 60
 

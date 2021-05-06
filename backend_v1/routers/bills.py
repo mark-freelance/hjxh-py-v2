@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from fastapi import APIRouter
 
-from db.bills import BILLS_PROJECTIONS, coll_bills
+from database.bills import BILLS_PROJECTIONS, coll_bills
 from api.models.base import MongoOutModel
 
 api_bills = APIRouter(prefix="/bills", tags=["订单数据"])

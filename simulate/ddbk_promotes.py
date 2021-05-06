@@ -3,7 +3,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from db.client import db
+from database.client import db
 from log import logger
 from simulate.config.const import TIME_DELAY, TARGET_PROMOTE_1_HEAD, TARGET_PROMOTE_1_ROWS, TARGET_PROMOTE_2_HEAD, \
     TARGET_PROMOTE_2_ROWS, TARGET_PROMOTE_3_HEAR, TARGET_PROMOTE_3_ROWS, TARGET_EXIT_INTRO_WINDOW, XPATH_TABLE_HEADER, \

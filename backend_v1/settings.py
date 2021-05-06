@@ -1,7 +1,7 @@
 import os
 
 PATH_ROOT = os.path.abspath(os.path.dirname(__file__))
-PATH_API = os.path.join(PATH_ROOT, "api")
+PATH_API = os.path.join(PATH_ROOT, "backend_v1")
 PATH_SIMULATE = os.path.join(PATH_ROOT, "simulate")
 
 PATH_VERSION_FILE = os.path.join(PATH_ROOT, "VERSION.txt")

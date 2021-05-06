@@ -29,7 +29,7 @@ def is_ddbk_login_success(driver):
 def hot_login(driver: WebDriver) -> bool:
     logger.info("正在尝试热启动，首先初始化访问首页")
     driver.get(URL_DDBK_HOME)
-    cookie_list = json_load(os.path.join(PATH_DATA, "ddbk-cookie-list.json"))
+    cookie_list = json_load(os.path.join(PATH_DATA, "ddbk-COOKIE-list.json"))
     for cookie in cookie_list:
         driver.add_cookie({"name": cookie["name"], "value": cookie["value"]})
     logger.info("Cookie装载完毕，重新访问，请等待……")
