@@ -1,4 +1,45 @@
+## 开发进度
+### 2021年05月08日
+#### 测试了商品ID的数据情况
+不容乐观，只通过商品列表api获得的数据结果，远没有orders里面的丰富，所以还是得以orders为主
+
+![](http://mark-vue-oss.oss-cn-hangzhou.aliyuncs.com/pasteimageintomarkdown/2021-05-08/66318202450289.png?Expires=4774010692&OSSAccessKeyId=LTAI4G8kArj75ch3irL8mUUJ&Signature=NaztxS3FZV3WWnSsRg7qYJDprsw%3D)
+
+
+### 2021年05月07日
+#### 完成`raw_data`模块的模板化
+基于`db_query`母函数，为`raw_data`所有子功能都提供了稳健的服务端`query`功能，并配合前端，基于路由实现自动匹配。
+
+
 ## 开发记录
+### 真是妙极了的bug，关于变量重命名， 2021年05月08日21:27:33
+之前为了控制就外部变量被屏蔽的提示，直接将函数的`cookie`变量重命名，当时IDE就慢极了，好家伙，原来是把其他变量也重命名了。。这直接导致我的数据库用户更新失效，产生了完全难以估摸的bug。。
+
+![](http://mark-vue-oss.oss-cn-hangzhou.aliyuncs.com/pasteimageintomarkdown/2021-05-08/49364871627935.png?Expires=4774080467&OSSAccessKeyId=LTAI4G8kArj75ch3irL8mUUJ&Signature=iccTnCMeC94AfY%2FEDyxiNN7xjYQ%3D)
+
+### 解决`docstring`"没有效果"的问题，2021年05月08日10:04:39
+参考：
+- [python - Pycharm does not auto-create documentation stubs - Stack Overflow](https://stackoverflow.com/questions/36292999/pycharm-does-not-auto-create-documentation-stubs)
+
+选择`Epytext`：
+![](http://mark-vue-oss.oss-cn-hangzhou.aliyuncs.com/pasteimageintomarkdown/2021-05-08/8427489537226.png?Expires=4774039530&OSSAccessKeyId=LTAI4G8kArj75ch3irL8mUUJ&Signature=HNZRuco1lMNTJNI6ss2GJOsPxWg%3D)
+
+之前搞`.txt`问题的时候把这里动过了。。。
+
+### 被`axios`倒逼修改`fastapi`的参数，哈哈哈
+由于`axios`里的`put`默认是用`data`属性，这导致我的`update_user`接口所依赖的几个子函数都要改成`Form`输入，而非`Query`，哈哈哈，无语
+
+### 关于`cors`问题
+参考：
+- [CORS (Cross-Origin Resource Sharing) - FastAPI](https://fastapi.tiangolo.com/tutorial/cors/)
+
+不可以直接用`*`去匹配任意`origin`，简单做法如下：
+```python
+ALLOW_ORIGINS = [
+    "http://localhost:3000",
+    "http://nanchuan.site:3000"
+]
+```
 
 ### 关于subprocess 运行 SIGNAL 6 的问题
 

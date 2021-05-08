@@ -1,5 +1,5 @@
 const loadCookie = (Cookie) => {
-  var cookies = {};
+  let cookies = {};
   Cookie.split(";").forEach((s) => {
     if (s.length > 0 && s.search("=") > 0) {
       const [a, b] = s.split("=");
@@ -2563,7 +2563,7 @@ function hackAntiContentFromCookie(_cookieStr) {
                             // };
                             // var n = t;
                             // we[z] = n[e("0xaa", "a6hQ")](oe[k](), Z);
-                            we.data = 70;
+                            we.data = Math.floor(Math.random() * 50) + 50
                             // debugger;
                         },
                         packN: function () {
@@ -2683,7 +2683,7 @@ function hackAntiContentFromCookie(_cookieStr) {
                     Ee = {
                         // 防止同一毫秒出现重复
                         init: function () {
-                            Ee[data] = parseInt(Math.random() * 10);
+                            Ee[data] = Math.floor(Math.random() * 10) + 1;
                         },
                         packN: function () {
                             return [][concat](s.ek(21, Ee[data]));

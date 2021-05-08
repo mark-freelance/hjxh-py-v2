@@ -1,13 +1,15 @@
 from fastapi import APIRouter
 
-from .ad.router import api_ad
-from .goods.router import api_goods
-from .orders.router import api_orders
-from .users.router import api_users
+from api.ad import ad_router
+from api.goods import goods_router
+from api.malls import malls_router
+from api.orders import orders_router
+from api.users import users_router
 
-api_root = APIRouter(prefix='/api/v2')
+root_router = APIRouter(prefix='/api/v2')
 
-api_root.include_router(api_orders)
-api_root.include_router(api_ad)
-api_root.include_router(api_goods)
-api_root.include_router(api_users)
+root_router.include_router(orders_router)
+root_router.include_router(goods_router)
+root_router.include_router(ad_router)
+root_router.include_router(malls_router)
+root_router.include_router(users_router)

@@ -1,5 +1,5 @@
 import os
-from database.client import db
+from database.mongodb_client import db
 
 SECONDS_PER_DAY = 86400 # 24 * 60 * 60
 

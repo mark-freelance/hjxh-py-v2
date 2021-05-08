@@ -3,7 +3,7 @@ from typing import TypedDict, Any
 import demjson
 from fastapi import HTTPException
 
-from database.client import db
+from database.mongodb_client import db
 
 
 class AjaxResult(TypedDict, total=False):
@@ -12,8 +12,8 @@ class AjaxResult(TypedDict, total=False):
     msg: Any
 
 
-def db_general_query(coll_name: str, query: str = None, skip: int = 0, limit: int = 10,
-                     sort: str = None) -> AjaxResult:
+def db_query(coll_name: str, query: str = None, skip: int = 0, limit: int = 10,
+             sort: str = None) -> AjaxResult:
     """
     refer: Advanced Dependencies - FastAPI - https://fastapi.tiangolo.com/advanced/advanced-dependencies/
     """

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from pymongo.errors import DuplicateKeyError
 
-from database.client import db
+from database.mongodb_client import db
 
 coll_bills = db['bills']
 

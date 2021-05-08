@@ -1,6 +1,6 @@
 import time
 
-from database.client import db
+from database.mongodb_client import db
 from api.models.accounts import AccountCategory, AccountStatus, Account
 from log import logger
 

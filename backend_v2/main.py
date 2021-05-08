@@ -3,18 +3,29 @@ import sys
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_offline import FastAPIOffline
 
-from api.root import api_root
+from api.root import root_router
 from log import logger
 from settings import PATH_VERSION_FILE
 
 with open(PATH_VERSION_FILE, "r") as f:
     version = f.read()
 
-app = FastAPIOffline(title="皇家小虎数据中台API", version=version)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
-                   allow_credentials=True)
+ALLOW_ORIGINS = [
+    "http://localhost:3000",
+    "http://nanchuan.site:3000"
+]
 
-app.include_router(api_root)
+app = FastAPIOffline(title="皇家小虎数据中台API", version=version)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOW_ORIGINS,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
+    
+)
+
+app.include_router(root_router)
 
 if __name__ == '__main__':
     import uvicorn
