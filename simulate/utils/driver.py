@@ -16,7 +16,7 @@ options = Options()
 
 #  add ua
 from simulate.utils.driver_supports import get_random_UA
-options.add_argument("user-agent=" + get_random_UA())
+options.add_argument("user_result-agent=" + get_random_UA())
 
 #  不可以无头，会导致找不到登录按钮
 # options.add_argument("headless")

@@ -12,24 +12,24 @@ def preprocess_cookie(_cookie: str) -> str:
     return [i for i in re.split(r'\s', _cookie) if i][-1]
 
 
-def verify_cookie_strict(_cookie: str) -> UserInfo:
+def verify_cookie_strict(cookie: str) -> UserInfo:
     """
     最重要的两个字段是 _nano_fp 和 SUB_PASS_ID
     """
-    assert _cookie, 'cookie不能为空！'
-    assert not re.search(r'\s', _cookie), 'cookie内不能有空！'
+    assert cookie, 'cookie不能为空！'
+    assert not re.search(r'\s', cookie), 'cookie内不能有空！'
     
-    anti_content = subprocess.Popen(['node', PATH_SCRIPT_GET_ANTI_CONTENT, _cookie], stdout=subprocess.PIPE,
+    anti_content = subprocess.Popen(['node', PATH_SCRIPT_GET_ANTI_CONTENT, cookie], stdout=subprocess.PIPE,
                                     encoding='utf-8').stdout.read().strip()
     
     data = {'crawlerInfo': anti_content}
     
     headers = {
         'anti-content': anti_content,
-        'user-agent': DEFAULT_USER_AGENT,
-        'COOKIE': _cookie
+        'user_result-agent': DEFAULT_USER_AGENT,
+        'COOKIE': cookie
     }
-    logger.info({"_cookie": _cookie, "anti-content": anti_content})
+    logger.info({"cookie": cookie, "anti-content": anti_content})
     try:
         res = requests.post(URL_FETCH_USER_INFO, data=data, headers=headers).json()  # type: dict
     except Exception as e:

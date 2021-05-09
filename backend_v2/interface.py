@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TypedDict, Any
+from typing import TypedDict, Any, Union
 
 
 class PddResult(TypedDict):
@@ -17,4 +17,5 @@ class UserInfo(PddUserInfo):
     _id: int
     password: str
     cookie: str
-    updateTime: datetime
+    verifiedTime: Union[int, float]
+    verifiedStatus: bool
