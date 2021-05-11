@@ -21,7 +21,7 @@ def get_malls() -> AjaxResult:
 
 @malls_router.get('/goods', summary='获取某店铺下的所有商品', tags=['商品系统'])
 def get_goods_from_mall(mall_id: int) -> AjaxResult:
-    cursor = db[COLL_GOODS_LIST].find({"mallId": mall_id}, {"sku_list": 0})
+    cursor = db[COLL_GOODS_LIST].find({"mall_id": mall_id}, {"sku_list": 0})
     return {
         "success": True,
         "result": {

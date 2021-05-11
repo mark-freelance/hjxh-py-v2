@@ -5,7 +5,7 @@ import requests
 
 from interface import UserInfo
 from log import logger
-from settings import DEFAULT_USER_AGENT, URL_FETCH_USER_INFO, PATH_SCRIPT_GET_ANTI_CONTENT
+from settings import DEFAULT_USER_AGENT, URL_FETCH_USER_INFO, PATH_SCRIPT_GET_ANTI_CONTENT, PATH_NODE
 
 
 def preprocess_cookie(_cookie: str) -> str:
@@ -19,8 +19,12 @@ def verify_cookie_strict(cookie: str) -> UserInfo:
     assert cookie, 'cookie不能为空！'
     assert not re.search(r'\s', cookie), 'cookie内不能有空！'
     
-    anti_content = subprocess.Popen(['node', PATH_SCRIPT_GET_ANTI_CONTENT, cookie], stdout=subprocess.PIPE,
-                                    encoding='utf-8').stdout.read().strip()
+    try:
+        anti_content = subprocess.Popen([PATH_NODE, PATH_SCRIPT_GET_ANTI_CONTENT, cookie], stdout=subprocess.PIPE,
+                                        encoding='utf-8').stdout.read().strip()
+    except Exception as e:
+        print({"cookie": cookie, "path": PATH_SCRIPT_GET_ANTI_CONTENT, "error": e.__str__()})
+        raise e
     
     data = {'crawlerInfo': anti_content}
     
@@ -29,7 +33,7 @@ def verify_cookie_strict(cookie: str) -> UserInfo:
         'user_result-agent': DEFAULT_USER_AGENT,
         'COOKIE': cookie
     }
-    logger.info({"cookie": cookie, "anti-content": anti_content})
+    # logger.info({"cookie": cookie, "anti-content": anti_content})
     try:
         res = requests.post(URL_FETCH_USER_INFO, data=data, headers=headers).json()  # type: dict
     except Exception as e:

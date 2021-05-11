@@ -8,6 +8,8 @@ from api.core import BaseResponseModel
 from database.mongodb_client import db
 from database.mongodb_query import db_query
 from interface import UserInfo
+from log import logger
+from settings import COLL_STATS, DEFAULT_USER_ID
 from utils.verify_user import verify_cookie_strict, preprocess_cookie
 
 users_router = APIRouter(tags=['账号系统'], prefix='/users')
@@ -35,7 +37,7 @@ def get_users(dep=Depends(partial(db_query, 'users'))):
 
 
 @users_router.put('/verify_cookie', summary='验证cookie是否有效', response_model=BaseResponseModel)
-def verify_cookie(cookie: str = Form(..., description="拼多多店铺cookie")):
+def verify_cookie(cookie: str = Form(..., description="拼多多店铺cookie")) -> dict:
     cookie = preprocess_cookie(cookie)
     try:
         user_info = verify_cookie_strict(cookie)
@@ -66,22 +68,25 @@ def verify_cookie_of_user(user_result=Depends(find_user)):
     user_1 = user_result['result']
     res = verify_cookie(user_1['cookie'])
     success = res.get('success', False)
+    verified_result = {"verifiedTime": time.time(), "verifiedStatus": success}
     coll_users.update_one(
         {"_id": user_1['_id']},
-        {"$set": {"verifiedTime": time.time(), "verifiedStatus": success}},
+        {"$set": verified_result},
     )
     if success:
         return {
             "success": True,
+            "result": verified_result,
             "msg": "验证通过"
         }
     else:
         return {
+            "result": verified_result,
             "msg": "验证失败"
         }
 
 
-@users_router.put('/update_cookie_of_user', summary='更新某个用户的cookie信息', response_model=BaseResponseModel)
+@users_router.post('/update_cookie_of_user', summary='更新某个用户的cookie信息', response_model=BaseResponseModel)
 def update_cookie_of_user(aj1=Depends(find_user),
                           aj2=Depends(verify_cookie)):
     """
@@ -145,4 +150,43 @@ def add_user(user: CreateUserModel):
     return {
         "success": True,
         "result": coll_users.find_one({"_id": user_info["_id"]})
+    }
+
+
+@users_router.post('/fast_add_user', summary='快速添加账号，只需要2个cookie字段即可', response_model=BaseResponseModel)
+def fast_add_user(PASS_ID: str = Form(...), _nano_fp: str = Form(...)):
+    cookie = f"PASS_ID={PASS_ID};_nano_fp={_nano_fp}"
+    res = verify_cookie(cookie)
+    user: UserInfo = res['result']
+    user['verifiedStatus'] = True
+    user['verifiedTime'] = time.time()
+    user['_id'] = user["userId"] = user['id']
+    if res.get("success"):
+        update_res = coll_users.update_one({"_id": user["_id"]}, {"$set": user}, upsert=True)
+        logger.info(update_res.raw_result)
+        return {"success": True, "msg": "添加成功"}
+    else:
+        return {"success": False, "msg": "添加失败"}
+
+
+@users_router.get('/stats', summary='获取某用户数据质检情况', response_model=BaseResponseModel)
+def get_user_stats(user_id: int = DEFAULT_USER_ID):
+    agg = db[COLL_STATS].aggregate([
+        {
+            "$match": {
+                "userId": user_id
+            }
+        },
+        {
+            "$project": {
+                "field": "$_id.apiType",
+                "status": "$status",
+                "detail": "$detail.v1",
+                "_id": 0
+            }
+        },
+    ])
+    return {
+        "success": True,
+        "result": dict((i['field'], {"status": i['status'], "detail": i["detail"]}) for i in list(agg))
     }

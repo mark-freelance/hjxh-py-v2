@@ -15,6 +15,7 @@ class PddUserInfo(TypedDict):
 
 class UserInfo(PddUserInfo):
     _id: int
+    userId: int
     password: str
     cookie: str
     verifiedTime: Union[int, float]

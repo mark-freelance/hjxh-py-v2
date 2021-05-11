@@ -15,12 +15,14 @@ PATH_SCRIPTS = os.path.join(PATH_ROOT, "scripts")
 PATH_SCRIPT_GET_ANTI_CONTENT = os.path.join(PATH_SCRIPTS, 'getAntiContent.js')
 PATH_SIMULATE = os.path.join(PATH_ROOT, "simulate")
 PATH_VERSION_FILE = os.path.join(PATH_ROOT, "../VERSION.txt")
+PATH_NODE = '/usr/local/bin/node'
 
 # accounts
 DEFAULT_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
 DEFAULT_USERNAME = "乐和食品店:冯露"
 DEFAULT_PASSWORD = "FL123456..."
 DEFAULT_MALL_ID = 506673970
+DEFAULT_USER_ID = 93917892
 DEFAULT_GOODS_ID = 221058511472
 
 # url
@@ -64,6 +66,7 @@ COLL_GOODS_LIST = "goods_list"
 COLL_GOODS_DETAIL = "goods_detail"
 COLL_GOODS_COMMENTS_LIST = "goods_comments_list"
 COLL_GOODS_COMMENTS_DETAIL = "goods_comments_detail"
+COLL_STATS = 'stats'
 EXCLUDE_ORDER_STATUS_LIST = [
     '待支付',
     '已取消'
