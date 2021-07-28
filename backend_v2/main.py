@@ -21,8 +21,7 @@ app.add_middleware(
     allow_origins=ALLOW_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
-    allow_credentials=True,
-    
+    allow_credentials=True
 )
 
 app.include_router(root_router)

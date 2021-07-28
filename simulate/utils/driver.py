@@ -1,8 +1,10 @@
-# from seleniumwire import webdriver
+import os
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from simulate.config.const import TIME_IMPLICIT_WAIT, PATH_DRIVER
+from simulate.config.const import TIME_IMPLICIT_WAIT, DRIVER_PATH, SIMULATE_DIR
+from simulate.utils.driver_supports import get_random_UA
 
 """
 1. 反爬检测当前浏览器窗口下的 window.navigator 对象是否包含 webdriver 这个属性。
@@ -12,11 +14,11 @@ from simulate.config.const import TIME_IMPLICIT_WAIT, PATH_DRIVER
     要想正常使用，需要把 Chrome 回滚 79 之前的版本，并找到对应的 ChromeDriver 版本，这样才可以
 """
 
-options = Options()
-
 #  add ua
-from simulate.utils.driver_supports import get_random_UA
-options.add_argument("user_result-agent=" + get_random_UA())
+options = Options()
+options.add_argument("user-agent=" + get_random_UA())
+options.add_argument("--auto-open-devtools-for-tabs")
+options.add_extension((os.path.join(SIMULATE_DIR, "extensions/editthiscookie")))
 
 #  不可以无头，会导致找不到登录按钮
 # options.add_argument("headless")
@@ -27,7 +29,7 @@ options.add_argument("user_result-agent=" + get_random_UA())
 # options.add_argument("--disable-blink-features")
 # options.add_argument("--disable-blink-features=AutomationControlled")
 
-driver = webdriver.Chrome(PATH_DRIVER, options=options)
+driver = webdriver.Chrome(DRIVER_PATH, options=options)
 driver.maximize_window()
 ws = driver.get_window_size()
 w = ws["width"]
@@ -35,10 +37,7 @@ h = ws["height"]
 driver.set_window_rect(w / 2, 0, w / 2, h)
 driver.implicitly_wait(TIME_IMPLICIT_WAIT)  # seconds
 
-"""
-cdp 全称是：Chrome Devtools-Protocol
-通过 addScriptToEvaluateOnNewDocument() 方法可以在页面还未加载之前，运行一段脚本。
-"""
+# cdp 全称是：Chrome Devtools-Protocol，通过 addScriptToEvaluateOnNewDocument() 方法可以在页面还未加载之前，运行一段脚本。
 driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
     "source": """Object.defineProperty(navigator, "webdriver", {get: () => undefined})"""
 })

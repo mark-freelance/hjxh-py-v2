@@ -45,10 +45,10 @@ AD_MAP = {
 }
 
 # mongodb config
-MONGO_HOST = "nanchuan.site"
+MONGO_HOST = "212.64.67.85"
 MONGO_PORT = 2708
-MONGO_AUTHENTICATION_DATABASE = "hjxh-operate"
-MONGO_DATABASE_NAME = "hjxh-operate"
+MONGO_AUTHENTICATION_DATABASE = "hjxh-operate-2"
+MONGO_DATABASE_NAME = "hjxh-operate-2"
 MONGO_USERNAME = 'hjxh-operator'
 MONGO_PASSWORD = "hjxh-operator"
 username = urllib.parse.quote_plus(MONGO_USERNAME)
@@ -67,7 +67,4 @@ COLL_GOODS_DETAIL = "goods_detail"
 COLL_GOODS_COMMENTS_LIST = "goods_comments_list"
 COLL_GOODS_COMMENTS_DETAIL = "goods_comments_detail"
 COLL_STATS = 'stats'
-EXCLUDE_ORDER_STATUS_LIST = [
-    '待支付',
-    '已取消'
-]
+EXCLUDE_ORDER_STATUS_LIST = ['待支付', '已取消']

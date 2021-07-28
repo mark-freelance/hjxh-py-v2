@@ -1,5 +1,4 @@
 import os
-from database.mongodb_client import db
 
 SECONDS_PER_DAY = 86400 # 24 * 60 * 60
 
@@ -17,17 +16,16 @@ DDBK_TARGET_LOGIN_VIA_ACCOUNT = "账户登录"
 DDBK_TARGET_KEYS_BASE = ['曝光量', '成交笔数', '交易额', '花费']
 DDBK_TARGET_KEYS_EXTEND = DDBK_TARGET_KEYS_BASE + ["点击量"]
 
-PATH_SIMULATE = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-PATH_ACCOUNTS = os.path.join(PATH_SIMULATE, "config/accounts.yaml")
-PATH_DATA = os.path.join(PATH_SIMULATE, "data")
-PATH_DDBK_COOKIES = os.path.join(PATH_DATA, "ddbk-cookies.json")
-PATH_DDCM_COOKIES = os.path.join(PATH_DATA, "ddcm-cookies.json")
+SIMULATE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+PATH_ACCOUNTS = os.path.join(SIMULATE_DIR, "config/accounts.yaml")
+DATA_PATH = os.path.join(SIMULATE_DIR, "data")
+COOKIE_JAR_DIR = os.path.join(DATA_PATH, "cookie_jar")
+COOKIE_STR_DIR = os.path.join(DATA_PATH, "cookie_str")
+PATH_DDBK_COOKIES = os.path.join(DATA_PATH, "ddbk-cookies.json")
+PATH_DDCM_COOKIES = os.path.join(DATA_PATH, "ddcm-cookies.json")
 
-PATH_DRIVER = os.path.join(os.path.dirname(__file__), "../execute-drivers/chromedriver-v90")
+DRIVER_PATH = os.path.join(os.path.dirname(__file__), "../execute-drivers/chromedriver-v90")
 
-coll_bills = db['bills']
-coll_detail = db['detail']
-coll_promote = db['promote']
 
 DEFAULT_HEADER = {
     "Content-Type": "application/json;charset=UTF-8",
@@ -46,4 +44,4 @@ TARGET_PROMOTE_3_ROWS = '//*[@id="__next"]/div/div[2]/div/div/div/div/div[7]/div
 XPATH_TABLE_HEADER = '//*[@data-testid="beast-core-table-middle-thead"]//th'
 XPATH_TABLE_CONTENT_ROWS = '//*[@data-testid="beast-core-table-middle-tbody"]//tr'
 
-
+TARGET_TO_LOGIN = "登录"

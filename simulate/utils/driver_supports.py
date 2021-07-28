@@ -56,7 +56,7 @@ def get_random_UA() -> str:
 def find_ele_with_text(driver: WebDriver, s: str) -> Optional[WebElement]:
     try:
         return driver.find_element_by_xpath(f"//*[text()='{s}']")  # type: WebElement
-        # return driver.find_element_by_xpath(f"//*[contains(text(), '{s}')]")  # type: WebElement
+        # return _driver.find_element_by_xpath(f"//*[contains(text(), '{s}')]")  # type: WebElement
     except WebDriverException:
         return None
     except Exception as e:

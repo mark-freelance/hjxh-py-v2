@@ -1,6 +1,6 @@
 import os
 
-from simulate.config.const import PATH_DATA, URL_DDBK_HOME
+from simulate.config.const import DATA_PATH, URL_DDBK_HOME
 from simulate.utils.driver import driver
 from simulate.utils.io import json_load
 
@@ -10,7 +10,7 @@ reference: https://www.cnblogs.com/deliaries/p/14121204.html
 '''
 driver.get(URL_DDBK_HOME)
 
-cookie_list = json_load(os.path.join(PATH_DATA, "ddbk-COOKIE-list.json"))
+cookie_list = json_load(os.path.join(DATA_PATH, "ddbk-COOKIE-list.json"))
 for cookie in cookie_list:
     driver.add_cookie({"name": cookie["name"], "value": cookie["value"]})
 

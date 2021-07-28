@@ -190,12 +190,12 @@ def fetch_promotes(driver):
     fetch_ddss(driver)
     fetch_ddcj(driver)
     fetch_ddfxt(driver)
-    # fetch_detail(driver)
-    # fetch_comments(driver)
+    # fetch_detail(_driver)
+    # fetch_comments(_driver)
     logger.info("finished fetching promotes")
 
 
 if __name__ == '__main__':
     auto_login(driver)
     fetch_promotes(driver)
-    # driver.quit()
+    # _driver.quit()
