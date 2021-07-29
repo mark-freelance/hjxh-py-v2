@@ -24,19 +24,16 @@ if __name__ == '__main__':
         """
         username, password = user
         pdd = PingDuoDuoSpider(username, password)
-        pass_id = pdd.get_pass_id()
+        user_info = pdd.get_pass_id()
 
         """
         update database
         """
-        if not pass_id:
-            logging.warning("PASS_ID 无效，请检查账号信息，或重新登录")
+        if not user_info:
+            logging.warning(f"账号【{username}】 登录失败，请检查账号信息")
         else:
             client = pymongo.MongoClient(MONGO_URI)
             db = client[MONGO_DATABASE_NAME]
             coll_name = "accounts"
-            db[coll_name].update_one({"_id": username}, {
-                "$set": {"username": username, "password": password, "PASS_ID": pass_id,
-                         "verified_time": datetime.now()}},
-                                     upsert=True)
+            db[coll_name].update_one({"_id": user_info["id"]}, {"$set": user_info}, upsert=True)
             logging.info(f"updated account of {username} into database: [{MONGO_DATABASE_NAME}, {coll_name}]")

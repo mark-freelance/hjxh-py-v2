@@ -31,6 +31,8 @@ Cookie: _crr=DRG1pLzzRH2BIEIlHBw4Z7fqDqniaqog; _bee=DRG1pLzzRH2BIEIlHBw4Z7fqDqni
 
 import logging
 import os
+from datetime import datetime
+from typing import Union
 
 import execjs.runtime_names
 import time
@@ -95,7 +97,7 @@ class PingDuoDuoSpider(object):
         ret = ctx.call("riskSign", riskSign_str)
         return ret, start_time
 
-    def get_pass_id(self):
+    def get_pass_id(self) -> Union[dict, None]:
         anti_content = get_anti_content(self.cookies)
         headers = {
             'sec-ch-ua': "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
@@ -122,13 +124,14 @@ class PingDuoDuoSpider(object):
         # print(data)
         # print(data)
         reqs = requests.session()
-        req = reqs.post(url=self.url, headers=headers, data=data.encode(), verify=False)
-        logging.debug(f"request result: {req.text}")
-        login_cookies = requests.utils.dict_from_cookiejar(req.cookies)
-        logging.debug(f"login cookie: {login_cookies}")
-        pass_id = login_cookies.get("PASS_ID")
-        logging.debug(f"PASS_ID: {pass_id}")
-        return pass_id
+        res = reqs.post(url=self.url, headers=headers, data=data.encode(), verify=False)
+        if not res.json().get("success"):
+            logging.warning(res.json())
+            return None
+        user_info = res.json()["result"]["userInfoVO"]
+        user_info["PASS_ID"] = requests.utils.dict_from_cookiejar(res.cookies)["PASS_ID"]
+        user_info["verify_time"] = datetime.now()
+        return user_info
 
 
 if __name__ == '__main__':
