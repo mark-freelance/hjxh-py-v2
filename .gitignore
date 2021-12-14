@@ -164,3 +164,6 @@ cython_debug/
 尔琪数据处理/
 
 node_modules/
+# add file of VERSION.txt in case for REDUNDANT changes being detected by IDE
+VERSION.txt
+

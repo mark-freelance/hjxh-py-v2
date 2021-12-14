@@ -1,4 +1,9 @@
 gd=".git"
+pcf=".git/hooks/post-commit"
+vf=VERSION.txt
+gf=.gitignore
+
+# 1. 判断是否在git目录内，不存在则退出
 if [[ ! -d $gd ]]
 then
 {
@@ -7,17 +12,36 @@ then
 }
 fi
 
-pcf=".git/hooks/post-commit"
+echo "args: [$*]"
+
+# 2. 判断post-commit文件是否存在，不存在则新建
 if [[ -f $pcf ]]
-then 
-{
-  echo "${pcf}文件已存在，请删除后再运行（谨慎）"
-  exit 1
+then {
+  # 2.1. 判断是否是用于卸载post-commit
+  if [[ $* =~ "--uninstall" ]]
+  then {
+    echo "rm ${pcf}"
+    rm -f $pcf
+    exit 1
+  }
+  else {
+    echo "${pcf}文件已存在，请删除后再运行（谨慎）"
+    exit 1
+  } 
+  fi
 }
+
+elif [[ $* =~ "--uninstall" ]]
+then {
+    echo "${pcf}不存在，请先安装！"
+    exit 1
+  }
+else {
+    echo "continuing"
+  }
 fi
 
 echo "正在安装脚本……"
-
 
 cat << 'EOF' >$pcf
 commit=$(git show --no-patch --format=%B)
@@ -48,11 +72,6 @@ fi
 
 echo "版本更新类型：$vm"
 
-
-
-
-vf=VERSION.txt
-
 if [[ ! -f $vf ]]
 then
 {
@@ -66,7 +85,6 @@ else
   echo "正在读取版本文件：$vf"
 }
 fi
-
 
 echo "当前版本：$(head -1 $vf)"
 echo "正在尝试更新……"
@@ -88,7 +106,18 @@ echo "更新后版本：$(head -1 $vf)"
 
 EOF
 
-
+# 3. 提升post-commit权限
 chmod +x $pcf
+
+# 4. 将VERSION 加入.gitignore防止后续被IDE看到
+if [[  $(grep ^${vf}$  $gf) ]];
+then echo "${vf} has added into ${gf}";
+else
+echo "\n# add file of ${vf} in case for REDUNDANT changes being detected by IDE
+${vf}\n" >> ${gf}
+    echo "added line of ${vf} into ${gf}"
+fi
+
+# finish
 echo "脚本初始化完成！每次`git commit`后都会自动运行"
-echo "MarkShawn2020 @github, 2021-04-22"
+echo "MarkShawn2020@github, 2021-04-22"
